@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { AudioRecorder } from "@/components/AudioRecorder";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 interface Category {
@@ -25,6 +25,7 @@ export default function CreateConflictPage() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,16 +41,10 @@ export default function CreateConflictPage() {
     fetchCategories();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    setShowConfirm(false);
     setLoading(true);
     setError("");
-
-    if (!optionA.trim() || !optionB.trim()) {
-      setError("Define las dos opciones (A y B)");
-      setLoading(false);
-      return;
-    }
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -98,6 +93,11 @@ export default function CreateConflictPage() {
     router.push("/feed");
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
   return (
     <div className="pb-20">
       {/* Header */}
@@ -111,7 +111,7 @@ export default function CreateConflictPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-5">
+      <form onSubmit={handleFormSubmit} className="p-4 space-y-5">
         {/* Title */}
         <div>
           <label className="text-sm font-medium text-gray-700 mb-1.5 block">Titulo del conflicto</label>
@@ -224,6 +224,39 @@ export default function CreateConflictPage() {
           {loading ? "Publicando..." : "Publicar conflicto"}
         </button>
       </form>
+
+      {/* Confirm Popup */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowConfirm(false)} />
+          <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">Revisar antes de publicar</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+              Una vez publicado, el conflicto <span className="font-semibold text-gray-900">no se puede editar ni eliminar</span>. Asegurate de que todo este bien antes de continuar.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-[0.98] transition-all"
+              >
+                Revisar
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 active:scale-[0.98] transition-all"
+              >
+                {loading ? "Publicando..." : "Publicar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Navbar />
     </div>
