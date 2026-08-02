@@ -15,6 +15,9 @@ export interface Database {
           username: string;
           avatar_url: string | null;
           role: "user" | "professional" | "admin";
+          is_blocked: boolean;
+          blocked_until: string | null;
+          blocked_permanently: boolean;
           created_at: string;
         };
         Insert: {
@@ -22,6 +25,9 @@ export interface Database {
           username: string;
           avatar_url?: string | null;
           role?: "user" | "professional" | "admin";
+          is_blocked?: boolean;
+          blocked_until?: string | null;
+          blocked_permanently?: boolean;
           created_at?: string;
         };
         Update: {
@@ -29,6 +35,9 @@ export interface Database {
           username?: string;
           avatar_url?: string | null;
           role?: "user" | "professional" | "admin";
+          is_blocked?: boolean;
+          blocked_until?: string | null;
+          blocked_permanently?: boolean;
           created_at?: string;
         };
       };

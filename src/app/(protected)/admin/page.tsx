@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Shield, Users, AlertTriangle, BarChart3 } from "lucide-react";
+import { Shield, Users, AlertTriangle, BarChart3, UserX } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -135,6 +135,22 @@ export default function AdminPage() {
         {/* Quick Actions */}
         <div className="space-y-3">
           <h2 className="text-sm font-bold text-gray-900">Acciones rapidas</h2>
+
+          <Link
+            href="/admin/users"
+            className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-gray-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Usuarios</p>
+                <p className="text-xs text-gray-500">Listado, editar, bloquear, eliminar</p>
+              </div>
+            </div>
+            <span className="text-gray-400">→</span>
+          </Link>
 
           <Link
             href="/admin/professionals"
