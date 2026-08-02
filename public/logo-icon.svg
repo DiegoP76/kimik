@@ -1,14 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
   <!-- Heart icon -->
-  <path d="M20 8C16 2 8 2 6 8C4 14 10 20 14 24C16 26 20 28 20 28C20 28 24 26 26 24C30 20 36 14 34 8C32 2 24 2 20 8Z" fill="url(#heartGradient)" stroke="none"/>
+  <path d="M24 10C19 3 9 3 7 10C5 17 12 24 17 29C19 31 24 34 24 34C24 34 29 31 31 29C36 24 43 17 41 10C39 3 29 3 24 10Z" fill="url(#heartGradient)" stroke="none"/>
   <!-- Person 1 silhouette (left) -->
-  <circle cx="13" cy="11" r="3" fill="white" opacity="0.9"/>
-  <path d="M9 18C9 16 11 15 13 15C15 15 17 16 17 18L17 22L9 22Z" fill="white" opacity="0.9"/>
+  <circle cx="16" cy="13" r="3.5" fill="white" opacity="0.9"/>
+  <path d="M11 21C11 19 13 18 16 18C19 18 21 19 21 21L21 26L11 26Z" fill="white" opacity="0.9"/>
   <!-- Person 2 silhouette (right) -->
-  <circle cx="27" cy="11" r="3" fill="white" opacity="0.9"/>
-  <path d="M23 18C23 16 25 15 27 15C29 15 31 16 31 18L31 22L23 22Z" fill="white" opacity="0.9"/>
+  <circle cx="32" cy="13" r="3.5" fill="white" opacity="0.9"/>
+  <path d="M27 21C27 19 29 18 32 18C35 18 37 19 37 21L37 26L27 26Z" fill="white" opacity="0.9"/>
   <defs>
-    <linearGradient id="heartGradient" x1="6" y1="2" x2="34" y2="28">
+    <linearGradient id="heartGradient" x1="7" y1="3" x2="41" y2="34">
       <stop offset="0%" stop-color="#F43F5E"/>
       <stop offset="100%" stop-color="#A855F7"/>
     </linearGradient>

@@ -1,15 +1,12 @@
 import Link from "next/link";
-import { Heart, MessageCircle, Stethoscope } from "lucide-react";
+import { MessageCircle, Stethoscope } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-dvh">
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg shadow-rose-500/30">
-          <Heart className="w-10 h-10 text-white" fill="white" />
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">KimiK</h1>
+        <img src="/logo.svg" alt="KimiK" className="h-16 mb-6" />
         <p className="text-gray-500 text-center mb-8 max-w-xs">
           Conflictos de pareja resueltos por la comunidad y expertos
         </p>
