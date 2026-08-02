@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { AudioRecorder } from "@/components/AudioRecorder";
-import { ArrowLeft, X, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-const categories = [
-  { value: "convivencia", label: "Convivencia" },
-  { value: "celos", label: "Celos" },
-  { value: "dinero", label: "Dinero" },
-  { value: "familia", label: "Familia" },
-  { value: "otros", label: "Otros" },
-] as const;
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function CreateConflictPage() {
   const [title, setTitle] = useState("");
@@ -22,10 +20,24 @@ export default function CreateConflictPage() {
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
   const [category, setCategory] = useState<string>("otros");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .order("created_at", { ascending: true });
+      if (data) setCategories(data);
+    };
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,16 +182,16 @@ export default function CreateConflictPage() {
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
-                key={cat.value}
+                key={cat.slug}
                 type="button"
-                onClick={() => setCategory(cat.value)}
+                onClick={() => setCategory(cat.slug)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  category === cat.value
+                  category === cat.slug
                     ? "bg-rose-600 text-white"
                     : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {cat.label}
+                {cat.name}
               </button>
             ))}
           </div>

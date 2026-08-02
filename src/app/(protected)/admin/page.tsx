@@ -174,6 +174,22 @@ export default function AdminPage() {
             </div>
             <span className="text-gray-400">→</span>
           </Link>
+
+          <Link
+            href="/admin/categories"
+            className="flex items-center justify-between bg-white rounded-2xl border border-gray-100 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-gray-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Categorias</p>
+                <p className="text-xs text-gray-500">Agregar, editar, eliminar</p>
+              </div>
+            </div>
+            <span className="text-gray-400">→</span>
+          </Link>
         </div>
       </div>
     </div>

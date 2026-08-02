@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BadgeCheck, Star, MessageCircle } from "lucide-react";
+import { BadgeCheck, Star, MessageCircle, Camera, Phone } from "lucide-react";
 import { AudioPlayer } from "@/components/AudioPlayer";
 
 interface ProfessionalProfile {
@@ -11,6 +11,8 @@ interface ProfessionalProfile {
   specialty: string | null;
   bio: string | null;
   photo_url: string | null;
+  instagram: string | null;
+  whatsapp: string | null;
   is_verified: boolean;
   rating: number;
   created_at: string;
@@ -97,6 +99,34 @@ export default function ProfessionalDetailPage() {
           </div>
           {professional.bio && (
             <p className="text-sm text-gray-600 mt-3">{professional.bio}</p>
+          )}
+
+          {/* Social Links */}
+          {(professional.instagram || professional.whatsapp) && (
+            <div className="flex justify-center gap-3 mt-4">
+              {professional.instagram && (
+                <a
+                  href={`https://instagram.com/${professional.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-pink-50 text-pink-600 rounded-xl text-xs font-medium"
+                >
+                  <Camera className="w-4 h-4" />
+                  {professional.instagram}
+                </a>
+              )}
+              {professional.whatsapp && (
+                <a
+                  href={`https://wa.me/549${professional.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-green-50 text-green-600 rounded-xl text-xs font-medium"
+                >
+                  <Phone className="w-4 h-4" />
+                  WhatsApp
+                </a>
+              )}
+            </div>
           )}
         </div>
 

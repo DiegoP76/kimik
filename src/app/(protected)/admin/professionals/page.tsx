@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Shield, Check, X, BadgeCheck, Clock } from "lucide-react";
+import { ArrowLeft, Shield, Check, X, BadgeCheck, Clock, Pencil } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -137,7 +137,11 @@ export default function AdminProfessionalsPage() {
           ) : (
             <div className="space-y-3">
               {pending.map((pro) => (
-                <div key={pro.id} className="bg-white rounded-2xl border border-orange-200 p-4">
+                <Link
+                  key={pro.id}
+                  href={`/admin/professionals/${pro.id}`}
+                  className="block bg-white rounded-2xl border border-orange-200 p-4"
+                >
                   <div className="flex items-start gap-3 mb-3">
                     {pro.photo_url ? (
                       <img
@@ -170,7 +174,10 @@ export default function AdminProfessionalsPage() {
                   )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleVerify(pro.id, pro.user_id, true)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleVerify(pro.id, pro.user_id, true);
+                      }}
                       disabled={processingId === pro.id}
                       className="flex-1 flex items-center justify-center gap-1 py-2.5 bg-green-600 text-white rounded-xl text-xs font-medium hover:bg-green-700 disabled:opacity-50"
                     >
@@ -178,7 +185,10 @@ export default function AdminProfessionalsPage() {
                       Aprobar
                     </button>
                     <button
-                      onClick={() => handleVerify(pro.id, pro.user_id, false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleVerify(pro.id, pro.user_id, false);
+                      }}
                       disabled={processingId === pro.id}
                       className="flex-1 flex items-center justify-center gap-1 py-2.5 bg-red-100 text-red-700 rounded-xl text-xs font-medium hover:bg-red-200 disabled:opacity-50"
                     >
@@ -186,7 +196,7 @@ export default function AdminProfessionalsPage() {
                       Rechazar
                     </button>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -205,7 +215,11 @@ export default function AdminProfessionalsPage() {
           ) : (
             <div className="space-y-2">
               {verified.map((pro) => (
-                <div key={pro.id} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-3">
+                <Link
+                  key={pro.id}
+                  href={`/admin/professionals/${pro.id}`}
+                  className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-3"
+                >
                   {pro.photo_url ? (
                     <img
                       src={pro.photo_url}
@@ -221,8 +235,11 @@ export default function AdminProfessionalsPage() {
                     <p className="text-sm font-medium text-gray-900 truncate">{pro.profiles?.username}</p>
                     <p className="text-xs text-gray-500">{pro.specialty || "Psicologo/a"}</p>
                   </div>
-                  <BadgeCheck className="w-4 h-4 text-green-500 shrink-0" />
-                </div>
+                  <div className="flex items-center gap-2">
+                    <BadgeCheck className="w-4 h-4 text-green-500 shrink-0" />
+                    <Pencil className="w-4 h-4 text-gray-400 shrink-0" />
+                  </div>
+                </Link>
               ))}
             </div>
           )}

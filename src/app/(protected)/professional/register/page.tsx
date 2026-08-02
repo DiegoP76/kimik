@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowLeft, Camera, X } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function RegisterProfessionalPage() {
   const [licenseNumber, setLicenseNumber] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [bio, setBio] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,8 @@ export default function RegisterProfessionalPage() {
       specialty: specialty.trim() || null,
       bio: bio.trim() || null,
       photo_url: photoUrl,
+      instagram: instagram.trim() || null,
+      whatsapp: whatsapp.trim() || null,
     });
 
     if (insertError) {
@@ -221,6 +224,29 @@ export default function RegisterProfessionalPage() {
             placeholder="Cuentanos sobre tu experiencia..."
             rows={3}
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Instagram (opcional)</label>
+          <input
+            type="text"
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="Ej: @tu_usuario"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">WhatsApp (opcional)</label>
+          <p className="text-xs text-gray-500 mb-2">Codigo de pais + numero. Ej: 1112345678</p>
+          <input
+            type="tel"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value.replace(/[^0-9]/g, ""))}
+            placeholder="Ej: 1112345678"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
         </div>
 

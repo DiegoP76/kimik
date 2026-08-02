@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
-import { BadgeCheck, Star, ArrowRight } from "lucide-react";
+import { BadgeCheck, Star, ArrowRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 interface Professional {
@@ -12,6 +12,8 @@ interface Professional {
   specialty: string | null;
   bio: string | null;
   photo_url: string | null;
+  instagram: string | null;
+  whatsapp: string | null;
   is_verified: boolean;
   rating: number;
   profiles: { username: string; avatar_url: string | null } | null;
@@ -68,12 +70,11 @@ export default function ProfessionalsPage() {
           </div>
         ) : (
           professionals.map((pro) => (
-            <Link
-              key={pro.id}
-              href={`/professional/${pro.user_id}`}
-              className="block bg-white rounded-2xl border border-gray-100 p-4"
-            >
-              <div className="flex items-center gap-3">
+            <div key={pro.id} className="bg-white rounded-2xl border border-gray-100 p-4">
+              <Link
+                href={`/professional/${pro.user_id}`}
+                className="flex items-center gap-3"
+              >
                 {pro.photo_url ? (
                   <img
                     src={pro.photo_url}
@@ -99,8 +100,20 @@ export default function ProfessionalsPage() {
                   </div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-gray-400 shrink-0" />
-              </div>
-            </Link>
+              </Link>
+              {pro.whatsapp && (
+                <a
+                  href={`https://wa.me/549${pro.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-xl text-xs font-medium hover:bg-green-600 active:scale-[0.98] transition-all"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Contactar por WhatsApp
+                </a>
+              )}
+            </div>
           ))
         )}
       </div>

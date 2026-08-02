@@ -40,6 +40,8 @@ export interface Database {
           specialty: string | null;
           bio: string | null;
           photo_url: string | null;
+          instagram: string | null;
+          whatsapp: string | null;
           is_verified: boolean;
           rating: number;
           created_at: string;
@@ -51,6 +53,8 @@ export interface Database {
           specialty?: string | null;
           bio?: string | null;
           photo_url?: string | null;
+          instagram?: string | null;
+          whatsapp?: string | null;
           is_verified?: boolean;
           rating?: number;
           created_at?: string;
@@ -62,6 +66,8 @@ export interface Database {
           specialty?: string | null;
           bio?: string | null;
           photo_url?: string | null;
+          instagram?: string | null;
+          whatsapp?: string | null;
           is_verified?: boolean;
           rating?: number;
           created_at?: string;
@@ -157,6 +163,29 @@ export interface Database {
           selected_option?: "A" | "B";
           feedback_text?: string | null;
           audio_url?: string | null;
+          created_at?: string;
+        };
+      };
+      categories: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          is_active?: boolean;
           created_at?: string;
         };
       };
