@@ -1,0 +1,204 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Navbar } from "@/components/Navbar";
+import { AudioRecorder } from "@/components/AudioRecorder";
+import { ArrowLeft, X, Plus } from "lucide-react";
+import Link from "next/link";
+
+const categories = [
+  { value: "convivencia", label: "Convivencia" },
+  { value: "celos", label: "Celos" },
+  { value: "dinero", label: "Dinero" },
+  { value: "familia", label: "Familia" },
+  { value: "otros", label: "Otros" },
+] as const;
+
+export default function CreateConflictPage() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [optionA, setOptionA] = useState("");
+  const [optionB, setOptionB] = useState("");
+  const [category, setCategory] = useState<string>("otros");
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (!optionA.trim() || !optionB.trim()) {
+      setError("Define las dos opciones (A y B)");
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError("Debes iniciar sesion");
+      setLoading(false);
+      return;
+    }
+
+    let audioUrl = null;
+    if (audioBlob) {
+      const fileName = `${user.id}/${Date.now()}.webm`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("conflict-audios")
+        .upload(fileName, audioBlob);
+
+      if (uploadError) {
+        setError("Error al subir el audio");
+        setLoading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("conflict-audios")
+        .getPublicUrl(uploadData.path);
+      audioUrl = urlData.publicUrl;
+    }
+
+    const { error: insertError } = await supabase.from("conflicts").insert({
+      user_id: user.id,
+      title: title.trim(),
+      description: description.trim() || null,
+      audio_url: audioUrl,
+      option_a: optionA.trim(),
+      option_b: optionB.trim(),
+      category,
+    });
+
+    if (insertError) {
+      setError("Error al publicar el conflicto");
+      setLoading(false);
+      return;
+    }
+
+    router.push("/feed");
+  };
+
+  return (
+    <div className="pb-20">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Link href="/feed" className="p-1">
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
+          </Link>
+          <h1 className="text-lg font-bold text-gray-900">Nuevo conflicto</h1>
+          <div className="w-7" />
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="p-4 space-y-5">
+        {/* Title */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Titulo del conflicto</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ej: Quien debe lavar los platos?"
+            maxLength={150}
+            required
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Cuenta la situacion (opcional)</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Cuenta que paso..."
+            rows={3}
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+          />
+        </div>
+
+        {/* Audio */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Nota de voz (opcional)</label>
+          <AudioRecorder onRecordingComplete={setAudioBlob} />
+          {audioBlob && (
+            <p className="text-xs text-green-600 mt-2">Audio grabado ({(audioBlob.size / 1024).toFixed(0)} KB)</p>
+          )}
+        </div>
+
+        {/* Options */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Las dos opciones</label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0">A</span>
+              <input
+                type="text"
+                value={optionA}
+                onChange={(e) => setOptionA(e.target.value)}
+                placeholder="Opcion A"
+                maxLength={100}
+                required
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold shrink-0">B</span>
+              <input
+                type="text"
+                value={optionB}
+                onChange={(e) => setOptionB(e.target.value)}
+                placeholder="Opcion B"
+                maxLength={100}
+                required
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Categoria</label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.value}
+                type="button"
+                onClick={() => setCategory(cat.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  category === cat.value
+                    ? "bg-rose-600 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl">{error}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading || !title.trim() || !optionA.trim() || !optionB.trim()}
+          className="w-full py-3.5 bg-rose-600 text-white rounded-xl font-semibold text-sm hover:bg-rose-700 disabled:opacity-50 active:scale-[0.98] transition-all"
+        >
+          {loading ? "Publicando..." : "Publicar conflicto"}
+        </button>
+      </form>
+
+      <Navbar />
+    </div>
+  );
+}

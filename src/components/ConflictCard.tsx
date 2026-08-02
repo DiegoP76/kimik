@@ -1,0 +1,208 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { cn, formatTimeAgo } from "@/lib/utils";
+import { MessageCircle, Vote, BadgeCheck } from "lucide-react";
+import { AudioPlayer } from "./AudioPlayer";
+
+interface ConflictWithVotes {
+  id: string;
+  title: string;
+  description: string | null;
+  audio_url: string | null;
+  option_a: string;
+  option_b: string;
+  category: string;
+  created_at: string;
+  profiles: { username: string; avatar_url: string | null } | null;
+  votes: { selected_option: "A" | "B" }[];
+  professional_opinions: { id: string }[];
+}
+
+interface ConflictCardProps {
+  conflict: ConflictWithVotes;
+  onVote?: (conflictId: string, option: "A" | "B") => void;
+  showResults?: boolean;
+}
+
+export function ConflictCard({ conflict, onVote, showResults = false }: ConflictCardProps) {
+  const [userVote, setUserVote] = useState<"A" | "B" | null>(null);
+  const [counts, setCounts] = useState({ a: 0, b: 0 });
+  const [hasVoted, setHasVoted] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getVoteCounts = async () => {
+      const { data } = await supabase.rpc("get_vote_counts", {
+        conflict_uuid: conflict.id,
+      });
+      if (data) {
+        setCounts({ a: Number(data[0]?.option_a_count || 0), b: Number(data[0]?.option_b_count || 0) });
+      }
+    };
+
+    const checkUserVote = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("votes")
+          .select("selected_option")
+          .eq("conflict_id", conflict.id)
+          .eq("user_id", user.id)
+          .single();
+        if (data) {
+          setUserVote(data.selected_option as "A" | "B");
+          setHasVoted(true);
+        }
+      }
+    };
+
+    getVoteCounts();
+    checkUserVote();
+
+    const channel = supabase
+      .channel(`votes-${conflict.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `conflict_id=eq.${conflict.id}` }, () => {
+        getVoteCounts();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [conflict.id]);
+
+  const handleVote = async (option: "A" | "B") => {
+    if (hasVoted) return;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    await supabase.from("votes").insert({
+      conflict_id: conflict.id,
+      user_id: user.id,
+      selected_option: option,
+    });
+
+    setUserVote(option);
+    setHasVoted(true);
+    setCounts((prev) => ({
+      a: option === "A" ? prev.a + 1 : prev.a,
+      b: option === "B" ? prev.b + 1 : prev.b,
+    }));
+
+    if (onVote) onVote(conflict.id, option);
+  };
+
+  const totalVotes = counts.a + counts.b;
+  const pctA = totalVotes > 0 ? (counts.a / totalVotes) * 100 : 50;
+  const pctB = totalVotes > 0 ? (counts.b / totalVotes) * 100 : 50;
+
+  const categoryColors: Record<string, string> = {
+    convivencia: "bg-blue-100 text-blue-700",
+    celos: "bg-red-100 text-red-700",
+    dinero: "bg-green-100 text-green-700",
+    familia: "bg-purple-100 text-purple-700",
+    otros: "bg-gray-100 text-gray-700",
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+              {conflict.profiles?.username?.[0]?.toUpperCase() || "?"}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                {conflict.profiles?.username || "Anonimo"}
+              </p>
+              <p className="text-[10px] text-gray-500">{formatTimeAgo(conflict.created_at)}</p>
+            </div>
+          </div>
+          <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium", categoryColors[conflict.category] || categoryColors.otros)}>
+            {conflict.category}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 className="font-semibold text-gray-900 mb-2">{conflict.title}</h3>
+        {conflict.description && (
+          <p className="text-sm text-gray-600 mb-3 line-clamp-3">{conflict.description}</p>
+        )}
+
+        {/* Audio */}
+        {conflict.audio_url && (
+          <div className="mb-3">
+            <AudioPlayer src={conflict.audio_url} />
+          </div>
+        )}
+
+        {/* Vote Options */}
+        <div className="space-y-2">
+          <button
+            onClick={() => handleVote("A")}
+            disabled={hasVoted}
+            className={cn(
+              "w-full relative overflow-hidden rounded-xl p-3 text-left transition-all",
+              hasVoted && userVote === "A" && "ring-2 ring-rose-500",
+              hasVoted ? "cursor-default" : "active:scale-[0.98]"
+            )}
+          >
+            {hasVoted && (
+              <div className="absolute inset-0 bg-rose-100 rounded-xl" style={{ width: `${pctA}%` }} />
+            )}
+            <div className="relative flex items-center justify-between">
+              <span className={cn("text-sm font-medium", hasVoted ? "text-rose-700" : "text-gray-700")}>
+                {conflict.option_a}
+              </span>
+              {hasVoted && (
+                <span className="text-xs font-bold text-rose-600">{Math.round(pctA)}%</span>
+              )}
+            </div>
+          </button>
+
+          <div className="text-center text-xs text-gray-400 font-medium">VS</div>
+
+          <button
+            onClick={() => handleVote("B")}
+            disabled={hasVoted}
+            className={cn(
+              "w-full relative overflow-hidden rounded-xl p-3 text-left transition-all",
+              hasVoted && userVote === "B" && "ring-2 ring-purple-500",
+              hasVoted ? "cursor-default" : "active:scale-[0.98]"
+            )}
+          >
+            {hasVoted && (
+              <div className="absolute inset-0 bg-purple-100 rounded-xl" style={{ width: `${pctB}%` }} />
+            )}
+            <div className="relative flex items-center justify-between">
+              <span className={cn("text-sm font-medium", hasVoted ? "text-purple-700" : "text-gray-700")}>
+                {conflict.option_b}
+              </span>
+              {hasVoted && (
+                <span className="text-xs font-bold text-purple-600">{Math.round(pctB)}%</span>
+              )}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-50 bg-gray-50/50">
+        <div className="flex items-center gap-1 text-gray-500">
+          <Vote className="w-3.5 h-3.5" />
+          <span className="text-xs">{totalVotes} votos</span>
+        </div>
+        {conflict.professional_opinions.length > 0 && (
+          <div className="flex items-center gap-1 text-rose-600">
+            <BadgeCheck className="w-3.5 h-3.5" />
+            <span className="text-xs">{conflict.professional_opinions.length} dictamen{conflict.professional_opinions.length > 1 ? "es" : ""}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

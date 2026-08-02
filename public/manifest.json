@@ -1,0 +1,25 @@
+{
+  "name": "KimiK - Parejas y Conflictos",
+  "short_name": "KimiK",
+  "description": "Vota en conflictos de pareja o recibe un dictamen profesional",
+  "start_url": "/feed",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#E11D48",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "lifestyle"]
+}
