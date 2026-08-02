@@ -4,16 +4,28 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConflictCard } from "@/components/ConflictCard";
 import { Navbar } from "@/components/Navbar";
-import { Flame, Clock, TrendingUp, Info, X } from "lucide-react";
+import { Flame, Clock, TrendingUp, Info, X, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type FilterType = "hot" | "new" | "top";
+type FilterType = "hot" | "new" | "top" | "mine";
 
 export default function FeedPage() {
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [filter, setFilter] = useState<FilterType>("hot");
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    };
+
+    getUserId();
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -27,21 +39,28 @@ export default function FeedPage() {
           profiles (username, avatar_url),
           votes (selected_option),
           professional_opinions (id)
-        `)
-        .eq("status", "active");
+        `);
+
+      if (filter === "mine") {
+        if (!userId) {
+          setLoading(false);
+          return;
+        }
+        query = query.eq("user_id", userId);
+      } else {
+        query = query.eq("status", "active");
+      }
 
       if (filter === "hot") {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         query = query.gte("created_at", sevenDaysAgo.toISOString());
         query = query.order("created_at", { ascending: false });
-      } else if (filter === "new") {
-        query = query.order("created_at", { ascending: false });
       } else {
         query = query.order("created_at", { ascending: false });
       }
 
-      const { data } = await query.limit(filter === "top" ? 50 : 20);
+      const { data } = await query.limit(filter === "top" ? 50 : filter === "mine" ? 100 : 20);
       if (data) {
         if (filter === "hot" || filter === "top") {
           data.sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
@@ -61,18 +80,20 @@ export default function FeedPage() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [filter]);
+  }, [filter, userId]);
 
   const filters: { id: FilterType; label: string; icon: typeof Flame }[] = [
     { id: "hot", label: "Popular", icon: Flame },
     { id: "new", label: "Nuevo", icon: Clock },
     { id: "top", label: "Top", icon: TrendingUp },
+    { id: "mine", label: "Mios", icon: User },
   ];
 
   const filterInfo = [
     { label: "Popular", desc: "Lo mas votado de los ultimos 7 dias", icon: Flame },
     { label: "Nuevo", desc: "Los conflictos mas recientes", icon: Clock },
     { label: "Top", desc: "Los mas votados de todos los tiempos", icon: TrendingUp },
+    { label: "Mios", desc: "Tus conflictos publicados", icon: User },
   ];
 
   return (
@@ -88,13 +109,13 @@ export default function FeedPage() {
             <Info className="w-4.5 h-4.5 text-gray-400" />
           </button>
         </div>
-        <div className="flex gap-1 px-4 pb-3">
+        <div className="flex gap-1 px-4 pb-3 overflow-x-auto">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
                 filter === f.id
                   ? "bg-rose-600 text-white"
                   : "bg-gray-100 text-gray-600"
@@ -116,8 +137,12 @@ export default function FeedPage() {
           </div>
         ) : conflicts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500 text-sm">No hay conflictos aun</p>
-            <p className="text-gray-400 text-xs mt-1">Sé el primero en publicar</p>
+            <p className="text-gray-500 text-sm">
+              {filter === "mine" ? "No publicaste ningun conflicto aun" : "No hay conflictos aun"}
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              {filter === "mine" ? "Publica tu primer conflicto" : "Sé el primero en publicar"}
+            </p>
           </div>
         ) : (
           conflicts.map((conflict) => (
