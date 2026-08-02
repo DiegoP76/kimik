@@ -13,6 +13,7 @@ interface PendingProfessional {
   license_number: string;
   specialty: string | null;
   bio: string | null;
+  photo_url: string | null;
   is_verified: boolean;
   created_at: string;
   profiles: { username: string; email?: string } | null;
@@ -56,7 +57,7 @@ export default function AdminProfessionalsPage() {
         `)
         .order("created_at", { ascending: false });
 
-      if (data) setProfessionals(data);
+      if (data) setProfessionals(data as PendingProfessional[]);
       setLoading(false);
     };
 
@@ -137,17 +138,32 @@ export default function AdminProfessionalsPage() {
             <div className="space-y-3">
               {pending.map((pro) => (
                 <div key={pro.id} className="bg-white rounded-2xl border border-orange-200 p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{pro.profiles?.username}</p>
-                      <p className="text-xs text-gray-500">Licencia: {pro.license_number}</p>
-                      {pro.specialty && (
-                        <p className="text-xs text-gray-500">Especialidad: {pro.specialty}</p>
-                      )}
+                  <div className="flex items-start gap-3 mb-3">
+                    {pro.photo_url ? (
+                      <img
+                        src={pro.photo_url}
+                        alt={pro.profiles?.username || "Profesional"}
+                        className="w-14 h-14 rounded-xl object-cover border border-gray-200 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-lg font-bold shrink-0">
+                        {pro.profiles?.username?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{pro.profiles?.username}</p>
+                          <p className="text-xs text-gray-500">Licencia: {pro.license_number}</p>
+                          {pro.specialty && (
+                            <p className="text-xs text-gray-500">Especialidad: {pro.specialty}</p>
+                          )}
+                        </div>
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-[10px] font-medium shrink-0">
+                          Pendiente
+                        </span>
+                      </div>
                     </div>
-                    <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-[10px] font-medium">
-                      Pendiente
-                    </span>
                   </div>
                   {pro.bio && (
                     <p className="text-xs text-gray-600 mb-3 bg-gray-50 p-2 rounded-lg">{pro.bio}</p>
@@ -190,9 +206,17 @@ export default function AdminProfessionalsPage() {
             <div className="space-y-2">
               {verified.map((pro) => (
                 <div key={pro.id} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
-                    {pro.profiles?.username?.[0]?.toUpperCase() || "?"}
-                  </div>
+                  {pro.photo_url ? (
+                    <img
+                      src={pro.photo_url}
+                      alt={pro.profiles?.username || "Profesional"}
+                      className="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                      {pro.profiles?.username?.[0]?.toUpperCase() || "?"}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{pro.profiles?.username}</p>
                     <p className="text-xs text-gray-500">{pro.specialty || "Psicologo/a"}</p>

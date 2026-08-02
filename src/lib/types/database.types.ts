@@ -39,6 +39,7 @@ export interface Database {
           license_number: string;
           specialty: string | null;
           bio: string | null;
+          photo_url: string | null;
           is_verified: boolean;
           rating: number;
           created_at: string;
@@ -49,6 +50,7 @@ export interface Database {
           license_number: string;
           specialty?: string | null;
           bio?: string | null;
+          photo_url?: string | null;
           is_verified?: boolean;
           rating?: number;
           created_at?: string;
@@ -59,6 +61,7 @@ export interface Database {
           license_number?: string;
           specialty?: string | null;
           bio?: string | null;
+          photo_url?: string | null;
           is_verified?: boolean;
           rating?: number;
           created_at?: string;

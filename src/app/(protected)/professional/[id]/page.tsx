@@ -10,6 +10,7 @@ interface ProfessionalProfile {
   id: string;
   specialty: string | null;
   bio: string | null;
+  photo_url: string | null;
   is_verified: boolean;
   rating: number;
   created_at: string;
@@ -74,9 +75,17 @@ export default function ProfessionalDetailPage() {
       <div className="p-4 space-y-4">
         {/* Profile */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
-            {professional.profiles?.username?.[0]?.toUpperCase() || "?"}
-          </div>
+          {professional.photo_url ? (
+            <img
+              src={professional.photo_url}
+              alt={professional.profiles?.username || "Profesional"}
+              className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 mx-auto mb-3"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
+              {professional.profiles?.username?.[0]?.toUpperCase() || "?"}
+            </div>
+          )}
           <div className="flex items-center justify-center gap-1.5">
             <h2 className="text-lg font-bold text-gray-900">{professional.profiles?.username}</h2>
             {professional.is_verified && <BadgeCheck className="w-5 h-5 text-rose-600" />}

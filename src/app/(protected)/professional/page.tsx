@@ -11,6 +11,7 @@ interface Professional {
   user_id: string;
   specialty: string | null;
   bio: string | null;
+  photo_url: string | null;
   is_verified: boolean;
   rating: number;
   profiles: { username: string; avatar_url: string | null } | null;
@@ -73,9 +74,17 @@ export default function ProfessionalsPage() {
               className="block bg-white rounded-2xl border border-gray-100 p-4"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                  {pro.profiles?.username?.[0]?.toUpperCase() || "?"}
-                </div>
+                {pro.photo_url ? (
+                  <img
+                    src={pro.photo_url}
+                    alt={pro.profiles?.username || "Profesional"}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                    {pro.profiles?.username?.[0]?.toUpperCase() || "?"}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <p className="text-sm font-semibold text-gray-900 truncate">
