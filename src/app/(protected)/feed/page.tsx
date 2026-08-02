@@ -101,7 +101,7 @@ export default function FeedPage() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-lg font-bold text-gray-900">KimiK</h1>
+          <img src="/logo.svg" alt="KimiK" className="h-8" />
           <button
             onClick={() => setShowInfo(true)}
             className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"

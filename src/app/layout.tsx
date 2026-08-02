@@ -43,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <link rel="apple-touch-icon" href="/logo-icon.svg" />
       </head>
       <body className="min-h-dvh bg-gray-50 text-gray-900 antialiased">
         <ServiceWorkerRegistrar />

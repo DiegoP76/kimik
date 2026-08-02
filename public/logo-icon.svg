@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Heart icon -->
+  <path d="M20 8C16 2 8 2 6 8C4 14 10 20 14 24C16 26 20 28 20 28C20 28 24 26 26 24C30 20 36 14 34 8C32 2 24 2 20 8Z" fill="url(#heartGradient)" stroke="none"/>
+  <!-- Person 1 silhouette (left) -->
+  <circle cx="13" cy="11" r="3" fill="white" opacity="0.9"/>
+  <path d="M9 18C9 16 11 15 13 15C15 15 17 16 17 18L17 22L9 22Z" fill="white" opacity="0.9"/>
+  <!-- Person 2 silhouette (right) -->
+  <circle cx="27" cy="11" r="3" fill="white" opacity="0.9"/>
+  <path d="M23 18C23 16 25 15 27 15C29 15 31 16 31 18L31 22L23 22Z" fill="white" opacity="0.9"/>
+  <defs>
+    <linearGradient id="heartGradient" x1="6" y1="2" x2="34" y2="28">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+</svg>
