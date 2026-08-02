@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, formatTimeAgo } from "@/lib/utils";
-import { MessageCircle, Vote, BadgeCheck, MapPin } from "lucide-react";
+import { Vote, BadgeCheck, MapPin } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 
 interface ConflictWithVotes {
@@ -24,10 +24,9 @@ interface ConflictWithVotes {
 interface ConflictCardProps {
   conflict: ConflictWithVotes;
   onVote?: (conflictId: string, option: "A" | "B") => void;
-  showResults?: boolean;
 }
 
-export function ConflictCard({ conflict, onVote, showResults = false }: ConflictCardProps) {
+export function ConflictCard({ conflict, onVote }: ConflictCardProps) {
   const [userVote, setUserVote] = useState<"A" | "B" | null>(null);
   const [counts, setCounts] = useState({ a: 0, b: 0 });
   const [hasVoted, setHasVoted] = useState(false);

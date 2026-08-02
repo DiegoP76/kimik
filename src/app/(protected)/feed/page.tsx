@@ -41,7 +41,7 @@ export default function FeedPage() {
         query = query.order("created_at", { ascending: false });
       }
 
-      const { data } = await query.limit(20);
+      const { data } = await query.limit(filter === "top" ? 50 : 20);
       if (data) {
         if (filter === "hot" || filter === "top") {
           data.sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));

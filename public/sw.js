@@ -4,8 +4,6 @@ const STATIC_ASSETS = [
   "/feed",
   "/create",
   "/profile",
-  "/login",
-  "/register",
   "/professional",
 ];
 
@@ -32,7 +30,8 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
 
-  if (request.url.includes("/auth/") || request.url.includes("/api/")) {
+  if (request.url.includes("/auth/") || request.url.includes("/api/") ||
+      request.url.includes("/login") || request.url.includes("/register")) {
     event.respondWith(fetch(request));
     return;
   }

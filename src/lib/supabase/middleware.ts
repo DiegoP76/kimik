@@ -25,21 +25,16 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const protectedPaths = ["/feed", "/create", "/profile", "/professional", "/admin"];
   const pathname = request.nextUrl.pathname;
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
-  if (isProtected) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
+  if (isProtected && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

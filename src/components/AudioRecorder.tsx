@@ -11,7 +11,7 @@ interface AudioRecorderProps {
 export function AudioRecorder({ onRecordingComplete, maxDuration = 60 }: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [cancelled, setCancelled] = useState(false);
+  const cancelledRef = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -22,6 +22,7 @@ export function AudioRecorder({ onRecordingComplete, maxDuration = 60 }: AudioRe
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
+      cancelledRef.current = false;
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -29,11 +30,10 @@ export function AudioRecorder({ onRecordingComplete, maxDuration = 60 }: AudioRe
 
       mediaRecorder.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
-        if (!cancelled) {
+        if (!cancelledRef.current) {
           const blob = new Blob(chunksRef.current, { type: "audio/webm" });
           onRecordingComplete(blob);
         }
-        setCancelled(false);
       };
 
       mediaRecorder.start();
@@ -63,7 +63,7 @@ export function AudioRecorder({ onRecordingComplete, maxDuration = 60 }: AudioRe
   };
 
   const cancelRecording = () => {
-    setCancelled(true);
+    cancelledRef.current = true;
     stopRecording();
   };
 
