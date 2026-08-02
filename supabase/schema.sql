@@ -32,7 +32,7 @@ CREATE TABLE conflicts (
   audio_url TEXT,
   option_a VARCHAR(100) NOT NULL,
   option_b VARCHAR(100) NOT NULL,
-  category VARCHAR(50) CHECK (category IN ('convivencia', 'celos', 'dinero', 'familia', 'otros')),
+  category VARCHAR(50),
   is_premium_analysis BOOLEAN DEFAULT FALSE,
   status VARCHAR(20) CHECK (status IN ('active', 'resolved', 'flagged')) DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

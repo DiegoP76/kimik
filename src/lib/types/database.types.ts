@@ -82,7 +82,7 @@ export interface Database {
           audio_url: string | null;
           option_a: string;
           option_b: string;
-          category: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          category: string;
           location: string | null;
           is_premium_analysis: boolean;
           status: "active" | "resolved" | "flagged";
@@ -96,7 +96,7 @@ export interface Database {
           audio_url?: string | null;
           option_a: string;
           option_b: string;
-          category: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          category: string;
           location?: string | null;
           is_premium_analysis?: boolean;
           status?: "active" | "resolved" | "flagged";
@@ -110,7 +110,7 @@ export interface Database {
           audio_url?: string | null;
           option_a?: string;
           option_b?: string;
-          category?: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          category?: string;
           location?: string | null;
           is_premium_analysis?: boolean;
           status?: "active" | "resolved" | "flagged";
