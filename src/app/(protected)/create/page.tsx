@@ -90,7 +90,7 @@ export default function CreateConflictPage() {
     });
 
     if (insertError) {
-      setError("Error al publicar el conflicto");
+      setError(insertError.message || "Error al publicar el conflicto");
       setLoading(false);
       return;
     }
