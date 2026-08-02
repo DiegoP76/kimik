@@ -54,3 +54,52 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+// Push Notification Handler
+self.addEventListener("push", (event) => {
+  let data = { title: "KimiK", body: "Nuevo conflicto publicado", url: "/feed" };
+
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: "/logo-icon.svg",
+    badge: "/logo-icon.svg",
+    vibrate: [100, 50, 100],
+    data: { url: data.url || "/feed" },
+    actions: [
+      { action: "open", title: "Ver conflicto" },
+    ],
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Notification Click Handler
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/feed";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      // Check if there's already a window open
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      // Open new window if none exists
+      return self.clients.openWindow(url);
+    })
+  );
+});

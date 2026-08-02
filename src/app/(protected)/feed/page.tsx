@@ -6,6 +6,7 @@ import { ConflictCard } from "@/components/ConflictCard";
 import { Navbar } from "@/components/Navbar";
 import { Flame, Clock, TrendingUp, Info, X, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/NotificationBell";
 
 type FilterType = "hot" | "new" | "top" | "mine";
 
@@ -102,12 +103,15 @@ export default function FeedPage() {
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="flex items-center justify-between px-4 py-3">
           <img src="/logo.svg" alt="KimiK" className="h-8" />
-          <button
-            onClick={() => setShowInfo(true)}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <Info className="w-4.5 h-4.5 text-gray-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <button
+              onClick={() => setShowInfo(true)}
+              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <Info className="w-4.5 h-4.5 text-gray-400" />
+            </button>
+          </div>
         </div>
         <div className="flex gap-1 px-4 pb-3 overflow-x-auto">
           {filters.map((f) => (

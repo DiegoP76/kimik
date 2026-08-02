@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
-import { LogOut, ChevronRight, Award, Shield } from "lucide-react";
+import { LogOut, ChevronRight, Award, Shield, Bell, BellOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,6 +12,7 @@ interface Profile {
   username: string;
   avatar_url: string | null;
   role: string;
+  push_notifications_enabled: boolean;
   created_at: string;
 }
 
@@ -19,6 +20,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState({ conflicts: 0, votes: 0 });
   const [loading, setLoading] = useState(true);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,7 +40,10 @@ export default function ProfilePage() {
         .eq("id", user.id)
         .single();
 
-      if (profileData) setProfile(profileData);
+      if (profileData) {
+        setProfile(profileData);
+        setPushEnabled(profileData.push_notifications_enabled || false);
+      }
 
       const { count: conflictsCount } = await supabase
         .from("conflicts")
@@ -63,6 +69,79 @@ export default function ProfilePage() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
+  };
+
+  const togglePushNotifications = async () => {
+    if (!profile) return;
+    setPushLoading(true);
+
+    const supabase = createClient();
+
+    if (!pushEnabled) {
+      // Enable push notifications
+      if ("Notification" in window && "serviceWorker" in navigator) {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          const registration = await navigator.serviceWorker.ready;
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const vapidKey = process.env.NEXT_PUBLIC_VAPID_KEY;
+
+          if (vapidKey) {
+            try {
+              const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: vapidKey,
+              });
+
+              const sub = subscription.toJSON();
+              await supabase.from("push_subscriptions").upsert({
+                user_id: user.id,
+                endpoint: sub.endpoint!,
+                p256dh: sub.keys!.p256dh,
+                auth: sub.keys!.auth,
+              });
+            } catch {
+              // VAPID key not configured, skip push subscription
+            }
+          }
+
+          await supabase
+            .from("profiles")
+            .update({ push_notifications_enabled: true })
+            .eq("id", user.id);
+
+          setPushEnabled(true);
+        }
+      }
+    } else {
+      // Disable push notifications
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      if ("serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await subscription.unsubscribe();
+        }
+      }
+
+      await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", user.id);
+
+      await supabase
+        .from("profiles")
+        .update({ push_notifications_enabled: false })
+        .eq("id", user.id);
+
+      setPushEnabled(false);
+    }
+
+    setPushLoading(false);
   };
 
   if (loading) {
@@ -128,6 +207,31 @@ export default function ProfilePage() {
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </Link>
+
+          {/* Push Notifications Toggle */}
+          <button
+            onClick={togglePushNotifications}
+            disabled={pushLoading}
+            className="flex items-center justify-between w-full p-4 border-b border-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              {pushEnabled ? (
+                <Bell className="w-5 h-5 text-green-600" />
+              ) : (
+                <BellOff className="w-5 h-5 text-gray-400" />
+              )}
+              <div className="text-left">
+                <span className="text-sm font-medium text-gray-900 block">Notificaciones push</span>
+                <span className="text-xs text-gray-500">
+                  {pushEnabled ? "Activadas" : "Desactivadas"}
+                </span>
+              </div>
+            </div>
+            <div className={`w-11 h-6 rounded-full transition-colors ${pushEnabled ? "bg-green-500" : "bg-gray-300"}`}>
+              <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${pushEnabled ? "translate-x-5.5 ml-0.5" : "translate-x-0.5"}`} />
+            </div>
+          </button>
+
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full p-4 text-left"

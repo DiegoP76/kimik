@@ -19,6 +19,8 @@ export interface Database {
           blocked_until: string | null;
           blocked_permanently: boolean;
           block_reason: string | null;
+          last_seen_at: string;
+          push_notifications_enabled: boolean;
           created_at: string;
         };
         Insert: {
@@ -30,6 +32,8 @@ export interface Database {
           blocked_until?: string | null;
           blocked_permanently?: boolean;
           block_reason?: string | null;
+          last_seen_at?: string;
+          push_notifications_enabled?: boolean;
           created_at?: string;
         };
         Update: {
@@ -41,6 +45,8 @@ export interface Database {
           blocked_until?: string | null;
           blocked_permanently?: boolean;
           block_reason?: string | null;
+          last_seen_at?: string;
+          push_notifications_enabled?: boolean;
           created_at?: string;
         };
       };
@@ -201,6 +207,32 @@ export interface Database {
           name?: string;
           slug?: string;
           is_active?: boolean;
+          created_at?: string;
+        };
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
           created_at?: string;
         };
       };

@@ -90,6 +90,21 @@ export default function CreateConflictPage() {
       return;
     }
 
+    // Send push notifications to other users
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conflictId: null, // Will be set by RLS
+          title: title.trim(),
+          author: user.id,
+        }),
+      });
+    } catch {
+      // Notification failed, but conflict was created - ignore
+    }
+
     router.push("/feed");
   };
 
