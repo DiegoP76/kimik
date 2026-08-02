@@ -20,6 +20,7 @@ export default function CreateConflictPage() {
   const [optionA, setOptionA] = useState("");
   const [optionB, setOptionB] = useState("");
   const [category, setCategory] = useState<string>("otros");
+  const [location, setLocation] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,7 @@ export default function CreateConflictPage() {
       option_a: optionA.trim(),
       option_b: optionB.trim(),
       category,
+      location: location.trim() || null,
     });
 
     if (insertError) {
@@ -195,6 +197,19 @@ export default function CreateConflictPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">Localidad / Ciudad (opcional)</label>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Ej: Buenos Aires"
+            maxLength={100}
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+          />
         </div>
 
         {error && (

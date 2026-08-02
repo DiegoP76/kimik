@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn, formatTimeAgo } from "@/lib/utils";
-import { MessageCircle, Vote, BadgeCheck } from "lucide-react";
+import { MessageCircle, Vote, BadgeCheck, MapPin } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 
 interface ConflictWithVotes {
@@ -14,6 +14,7 @@ interface ConflictWithVotes {
   option_a: string;
   option_b: string;
   category: string;
+  location: string | null;
   created_at: string;
   profiles: { username: string; avatar_url: string | null } | null;
   votes: { selected_option: "A" | "B" }[];
@@ -30,6 +31,7 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
   const [userVote, setUserVote] = useState<"A" | "B" | null>(null);
   const [counts, setCounts] = useState({ a: 0, b: 0 });
   const [hasVoted, setHasVoted] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -98,6 +100,12 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
   const pctA = totalVotes > 0 ? (counts.a / totalVotes) * 100 : 50;
   const pctB = totalVotes > 0 ? (counts.b / totalVotes) * 100 : 50;
 
+  // Dynamic colors: more votes = green, less = red, equal = neutral
+  const aWins = counts.a > counts.b;
+  const bWins = counts.b > counts.a;
+  const optionAColor = hasVoted ? (aWins ? { bar: "bg-green-100", text: "text-green-700", pct: "text-green-600", ring: "ring-green-500" } : bWins ? { bar: "bg-red-100", text: "text-red-700", pct: "text-red-600", ring: "ring-red-500" } : { bar: "bg-gray-100", text: "text-gray-700", pct: "text-gray-600", ring: "ring-gray-400" }) : null;
+  const optionBColor = hasVoted ? (bWins ? { bar: "bg-green-100", text: "text-green-700", pct: "text-green-600", ring: "ring-green-500" } : aWins ? { bar: "bg-red-100", text: "text-red-700", pct: "text-red-600", ring: "ring-red-500" } : { bar: "bg-gray-100", text: "text-gray-700", pct: "text-gray-600", ring: "ring-gray-400" }) : null;
+
   const categoryColors: Record<string, string> = {
     convivencia: "bg-blue-100 text-blue-700",
     celos: "bg-red-100 text-red-700",
@@ -105,6 +113,10 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
     familia: "bg-purple-100 text-purple-700",
     otros: "bg-gray-100 text-gray-700",
   };
+
+  const descriptionText = conflict.description || "";
+  const isLong = descriptionText.length > 120;
+  const displayText = !expanded && isLong ? descriptionText.slice(0, 120) + "..." : descriptionText;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
@@ -129,37 +141,49 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
 
         {/* Title */}
         <h3 className="font-semibold text-gray-900 mb-2">{conflict.title}</h3>
-        {conflict.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-3">{conflict.description}</p>
+
+        {/* Expandable Description */}
+        {descriptionText && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-600 whitespace-pre-wrap">{displayText}</p>
+            {isLong && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-xs text-rose-600 font-medium mt-1 hover:underline"
+              >
+                {expanded ? "ver menos" : "ver mas"}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Audio */}
         {conflict.audio_url && (
-          <div className="mb-3">
+          <div className="mb-4">
             <AudioPlayer src={conflict.audio_url} />
           </div>
         )}
 
         {/* Vote Options */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <button
             onClick={() => handleVote("A")}
             disabled={hasVoted}
             className={cn(
               "w-full relative overflow-hidden rounded-xl p-3 text-left transition-all",
-              hasVoted && userVote === "A" && "ring-2 ring-rose-500",
+              hasVoted && userVote === "A" && `ring-2 ${optionAColor?.ring}`,
               hasVoted ? "cursor-default" : "active:scale-[0.98]"
             )}
           >
             {hasVoted && (
-              <div className="absolute inset-0 bg-rose-100 rounded-xl" style={{ width: `${pctA}%` }} />
+              <div className={cn("absolute inset-0 rounded-xl", optionAColor?.bar)} style={{ width: `${pctA}%` }} />
             )}
             <div className="relative flex items-center justify-between">
-              <span className={cn("text-sm font-medium", hasVoted ? "text-rose-700" : "text-gray-700")}>
+              <span className={cn("text-sm font-medium", hasVoted ? optionAColor?.text : "text-gray-700")}>
                 {conflict.option_a}
               </span>
               {hasVoted && (
-                <span className="text-xs font-bold text-rose-600">{Math.round(pctA)}%</span>
+                <span className={cn("text-xs font-bold", optionAColor?.pct)}>{Math.round(pctA)}%</span>
               )}
             </div>
           </button>
@@ -171,19 +195,19 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
             disabled={hasVoted}
             className={cn(
               "w-full relative overflow-hidden rounded-xl p-3 text-left transition-all",
-              hasVoted && userVote === "B" && "ring-2 ring-purple-500",
+              hasVoted && userVote === "B" && `ring-2 ${optionBColor?.ring}`,
               hasVoted ? "cursor-default" : "active:scale-[0.98]"
             )}
           >
             {hasVoted && (
-              <div className="absolute inset-0 bg-purple-100 rounded-xl" style={{ width: `${pctB}%` }} />
+              <div className={cn("absolute inset-0 rounded-xl", optionBColor?.bar)} style={{ width: `${pctB}%` }} />
             )}
             <div className="relative flex items-center justify-between">
-              <span className={cn("text-sm font-medium", hasVoted ? "text-purple-700" : "text-gray-700")}>
+              <span className={cn("text-sm font-medium", hasVoted ? optionBColor?.text : "text-gray-700")}>
                 {conflict.option_b}
               </span>
               {hasVoted && (
-                <span className="text-xs font-bold text-purple-600">{Math.round(pctB)}%</span>
+                <span className={cn("text-xs font-bold", optionBColor?.pct)}>{Math.round(pctB)}%</span>
               )}
             </div>
           </button>
@@ -192,9 +216,17 @@ export function ConflictCard({ conflict, onVote, showResults = false }: Conflict
 
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-50 bg-gray-50/50">
-        <div className="flex items-center gap-1 text-gray-500">
-          <Vote className="w-3.5 h-3.5" />
-          <span className="text-xs">{totalVotes} votos</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 text-gray-500">
+            <Vote className="w-3.5 h-3.5" />
+            <span className="text-xs">{totalVotes} votos</span>
+          </div>
+          {conflict.location && (
+            <div className="flex items-center gap-1 text-gray-500">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="text-xs">{conflict.location}</span>
+            </div>
+          )}
         </div>
         {conflict.professional_opinions.length > 0 && (
           <div className="flex items-center gap-1 text-rose-600">

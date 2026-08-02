@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { AudioPlayer } from "@/components/AudioPlayer";
-import { ArrowLeft, Vote, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Vote, BadgeCheck, MapPin } from "lucide-react";
 import { cn, formatTimeAgo } from "@/lib/utils";
 import Link from "next/link";
 
@@ -17,6 +17,7 @@ interface ConflictDetail {
   option_a: string;
   option_b: string;
   category: string;
+  location: string | null;
   created_at: string;
   profiles: { username: string; avatar_url: string | null } | null;
   professional_opinions: {
@@ -37,6 +38,7 @@ export default function ConflictDetailPage() {
   const [counts, setCounts] = useState({ a: 0, b: 0 });
   const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -125,6 +127,16 @@ export default function ConflictDetailPage() {
   const pctA = totalVotes > 0 ? (counts.a / totalVotes) * 100 : 50;
   const pctB = totalVotes > 0 ? (counts.b / totalVotes) * 100 : 50;
 
+  // Dynamic colors: more votes = green, less = red, equal = neutral
+  const aWins = counts.a > counts.b;
+  const bWins = counts.b > counts.a;
+  const optionAColor = hasVoted ? (aWins ? { bar: "bg-green-50", text: "text-green-700", pct: "text-green-600", label: "text-green-500", ring: "ring-green-500" } : bWins ? { bar: "bg-red-50", text: "text-gray-900", pct: "text-red-600", label: "text-red-500", ring: "ring-red-500" } : { bar: "bg-gray-50", text: "text-gray-900", pct: "text-gray-600", label: "text-gray-500", ring: "ring-gray-400" }) : null;
+  const optionBColor = hasVoted ? (bWins ? { bar: "bg-green-50", text: "text-green-700", pct: "text-green-600", label: "text-green-500", ring: "ring-green-500" } : aWins ? { bar: "bg-red-50", text: "text-gray-900", pct: "text-red-600", label: "text-red-500", ring: "ring-red-500" } : { bar: "bg-gray-50", text: "text-gray-900", pct: "text-gray-600", label: "text-gray-500", ring: "ring-gray-400" }) : null;
+
+  const descriptionText = conflict.description || "";
+  const isLong = descriptionText.length > 120;
+  const displayText = !expanded && isLong ? descriptionText.slice(0, 120) + "..." : descriptionText;
+
   return (
     <div className="pb-20">
       {/* Header */}
@@ -150,34 +162,44 @@ export default function ConflictDetailPage() {
           </div>
         </div>
 
-        {/* Description */}
-        {conflict.description && (
-          <p className="text-sm text-gray-700 leading-relaxed">{conflict.description}</p>
+        {/* Expandable Description */}
+        {descriptionText && (
+          <div>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{displayText}</p>
+            {isLong && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-xs text-rose-600 font-medium mt-1 hover:underline"
+              >
+                {expanded ? "ver menos" : "ver mas"}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Audio */}
         {conflict.audio_url && <AudioPlayer src={conflict.audio_url} />}
 
         {/* Vote Buttons */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <button
             onClick={() => handleVote("A")}
             disabled={hasVoted}
             className={cn(
               "w-full relative overflow-hidden rounded-2xl p-4 text-left transition-all",
-              hasVoted && userVote === "A" && "ring-2 ring-rose-500",
+              hasVoted && userVote === "A" && `ring-2 ${optionAColor?.ring}`,
               hasVoted ? "cursor-default" : "active:scale-[0.98]"
             )}
           >
             {hasVoted && (
-              <div className="absolute inset-0 bg-rose-50 rounded-2xl" style={{ width: `${pctA}%` }} />
+              <div className={cn("absolute inset-0 rounded-2xl", optionAColor?.bar)} style={{ width: `${pctA}%` }} />
             )}
             <div className="relative flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-rose-500">OPCION A</span>
-                <p className="text-sm font-medium text-gray-900">{conflict.option_a}</p>
+                <span className={cn("text-[10px] font-bold", optionAColor?.label || "text-rose-500")}>OPCION A</span>
+                <p className={cn("text-sm font-medium", hasVoted ? optionAColor?.text : "text-gray-900")}>{conflict.option_a}</p>
               </div>
-              {hasVoted && <span className="text-lg font-bold text-rose-600">{Math.round(pctA)}%</span>}
+              {hasVoted && <span className={cn("text-lg font-bold", optionAColor?.pct)}>{Math.round(pctA)}%</span>}
             </div>
           </button>
 
@@ -188,27 +210,35 @@ export default function ConflictDetailPage() {
             disabled={hasVoted}
             className={cn(
               "w-full relative overflow-hidden rounded-2xl p-4 text-left transition-all",
-              hasVoted && userVote === "B" && "ring-2 ring-purple-500",
+              hasVoted && userVote === "B" && `ring-2 ${optionBColor?.ring}`,
               hasVoted ? "cursor-default" : "active:scale-[0.98]"
             )}
           >
             {hasVoted && (
-              <div className="absolute inset-0 bg-purple-50 rounded-2xl" style={{ width: `${pctB}%` }} />
+              <div className={cn("absolute inset-0 rounded-2xl", optionBColor?.bar)} style={{ width: `${pctB}%` }} />
             )}
             <div className="relative flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold text-purple-500">OPCION B</span>
-                <p className="text-sm font-medium text-gray-900">{conflict.option_b}</p>
+                <span className={cn("text-[10px] font-bold", optionBColor?.label || "text-purple-500")}>OPCION B</span>
+                <p className={cn("text-sm font-medium", hasVoted ? optionBColor?.text : "text-gray-900")}>{conflict.option_b}</p>
               </div>
-              {hasVoted && <span className="text-lg font-bold text-purple-600">{Math.round(pctB)}%</span>}
+              {hasVoted && <span className={cn("text-lg font-bold", optionBColor?.pct)}>{Math.round(pctB)}%</span>}
             </div>
           </button>
         </div>
 
-        {/* Vote Count */}
-        <div className="text-center text-xs text-gray-500">
-          <Vote className="w-3.5 h-3.5 inline mr-1" />
-          {totalVotes} votos totales
+        {/* Vote Count + Location */}
+        <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            <Vote className="w-3.5 h-3.5" />
+            <span>{totalVotes} votos totales</span>
+          </div>
+          {conflict.location && (
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{conflict.location}</span>
+            </div>
+          )}
         </div>
 
         {/* Professional Opinions */}

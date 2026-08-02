@@ -83,6 +83,7 @@ export interface Database {
           option_a: string;
           option_b: string;
           category: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          location: string | null;
           is_premium_analysis: boolean;
           status: "active" | "resolved" | "flagged";
           created_at: string;
@@ -96,6 +97,7 @@ export interface Database {
           option_a: string;
           option_b: string;
           category: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          location?: string | null;
           is_premium_analysis?: boolean;
           status?: "active" | "resolved" | "flagged";
           created_at?: string;
@@ -109,6 +111,7 @@ export interface Database {
           option_a?: string;
           option_b?: string;
           category?: "convivencia" | "celos" | "dinero" | "familia" | "otros";
+          location?: string | null;
           is_premium_analysis?: boolean;
           status?: "active" | "resolved" | "flagged";
           created_at?: string;
