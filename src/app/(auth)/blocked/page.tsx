@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Ban, Clock, LogOut } from "lucide-react";
+import { Ban, Clock, LogOut, MessageSquare } from "lucide-react";
 
 export default function BlockedPage() {
   const [blockedUntil, setBlockedUntil] = useState<string | null>(null);
   const [isPermanent, setIsPermanent] = useState(false);
+  const [blockReason, setBlockReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,13 +22,14 @@ export default function BlockedPage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_blocked, blocked_until, blocked_permanently")
+        .select("is_blocked, blocked_until, blocked_permanently, block_reason")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setIsPermanent(profile.blocked_permanently);
         setBlockedUntil(profile.blocked_until);
+        setBlockReason(profile.block_reason);
       }
       setLoading(false);
     };
@@ -55,6 +57,18 @@ export default function BlockedPage() {
         <Ban className="w-8 h-8 text-red-600" />
       </div>
       <h1 className="text-xl font-bold text-gray-900 mb-2">Cuenta bloqueada</h1>
+
+      {/* Block reason */}
+      {blockReason && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 w-full max-w-xs">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare className="w-4 h-4 text-orange-600" />
+            <span className="text-xs font-semibold text-orange-700">Motivo:</span>
+          </div>
+          <p className="text-sm text-orange-800 text-left">{blockReason}</p>
+        </div>
+      )}
+
       {isPermanent ? (
         <p className="text-sm text-gray-600 mb-6">
           Tu cuenta ha sido bloqueada permanentemente. Si crees que esto es un error, contacta al administrador.
@@ -63,7 +77,7 @@ export default function BlockedPage() {
         <p className="text-sm text-gray-600 mb-6">
           Tu cuenta esta bloqueada temporalmente.
           {blockedUntil && (
-            <span className="block mt-1 font-medium text-gray-900">
+            <span className="block mt-2 font-medium text-gray-900">
               <Clock className="w-4 h-4 inline mr-1" />
               Se desbloquea el {new Date(blockedUntil).toLocaleDateString("es-AR")} a las {new Date(blockedUntil).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}
             </span>

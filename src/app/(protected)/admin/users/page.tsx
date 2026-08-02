@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Shield, Users, Search, Edit2, Trash2, Ban, Clock, X, Save, UserX, Lock } from "lucide-react";
+import { ArrowLeft, Shield, Users, Search, Edit2, Trash2, Ban, Clock, X, Save, UserX, Lock, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { cn, formatTimeAgo } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ interface User {
   is_blocked: boolean;
   blocked_until: string | null;
   blocked_permanently: boolean;
+  block_reason: string | null;
   created_at: string;
 }
 
@@ -28,6 +29,7 @@ export default function AdminUsersPage() {
   const [editRole, setEditRole] = useState("");
   const [showBlockModal, setShowBlockModal] = useState<User | null>(null);
   const [blockDays, setBlockDays] = useState(15);
+  const [blockReason, setBlockReason] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState<User | null>(null);
   const router = useRouter();
 
@@ -93,13 +95,25 @@ export default function AdminUsersPage() {
 
     await supabase
       .from("profiles")
-      .update({ is_blocked: true, blocked_until: blockedUntil.toISOString(), blocked_permanently: false })
+      .update({
+        is_blocked: true,
+        blocked_until: blockedUntil.toISOString(),
+        blocked_permanently: false,
+        block_reason: blockReason.trim() || null,
+      })
       .eq("id", showBlockModal.id);
 
     setUsers((prev) =>
-      prev.map((u) => u.id === showBlockModal.id ? { ...u, is_blocked: true, blocked_until: blockedUntil.toISOString(), blocked_permanently: false } : u)
+      prev.map((u) => u.id === showBlockModal.id ? {
+        ...u,
+        is_blocked: true,
+        blocked_until: blockedUntil.toISOString(),
+        blocked_permanently: false,
+        block_reason: blockReason.trim() || null,
+      } : u)
     );
     setShowBlockModal(null);
+    setBlockReason("");
   };
 
   const handleBlockPermanent = async () => {
@@ -107,24 +121,36 @@ export default function AdminUsersPage() {
     const supabase = createClient();
     await supabase
       .from("profiles")
-      .update({ is_blocked: true, blocked_until: null, blocked_permanently: true })
+      .update({
+        is_blocked: true,
+        blocked_until: null,
+        blocked_permanently: true,
+        block_reason: blockReason.trim() || null,
+      })
       .eq("id", showBlockModal.id);
 
     setUsers((prev) =>
-      prev.map((u) => u.id === showBlockModal.id ? { ...u, is_blocked: true, blocked_until: null, blocked_permanently: true } : u)
+      prev.map((u) => u.id === showBlockModal.id ? {
+        ...u,
+        is_blocked: true,
+        blocked_until: null,
+        blocked_permanently: true,
+        block_reason: blockReason.trim() || null,
+      } : u)
     );
     setShowBlockModal(null);
+    setBlockReason("");
   };
 
   const handleUnblock = async (userId: string) => {
     const supabase = createClient();
     await supabase
       .from("profiles")
-      .update({ is_blocked: false, blocked_until: null, blocked_permanently: false })
+      .update({ is_blocked: false, blocked_until: null, blocked_permanently: false, block_reason: null })
       .eq("id", userId);
 
     setUsers((prev) =>
-      prev.map((u) => u.id === userId ? { ...u, is_blocked: false, blocked_until: null, blocked_permanently: false } : u)
+      prev.map((u) => u.id === userId ? { ...u, is_blocked: false, blocked_until: null, blocked_permanently: false, block_reason: null } : u)
     );
   };
 
@@ -132,13 +158,9 @@ export default function AdminUsersPage() {
     if (!showDeleteModal) return;
     const supabase = createClient();
 
-    // Delete user's votes
     await supabase.from("votes").delete().eq("user_id", showDeleteModal.id);
-    // Delete user's conflicts
     await supabase.from("conflicts").delete().eq("user_id", showDeleteModal.id);
-    // Delete professional profile if exists
     await supabase.from("professional_profiles").delete().eq("user_id", showDeleteModal.id);
-    // Delete profile
     await supabase.from("profiles").delete().eq("id", showDeleteModal.id);
 
     setUsers((prev) => prev.filter((u) => u.id !== showDeleteModal.id));
@@ -228,6 +250,17 @@ export default function AdminUsersPage() {
                   )}
                 </div>
               </div>
+
+              {/* Block reason */}
+              {user.is_blocked && user.block_reason && (
+                <div className="mb-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <MessageSquare className="w-3 h-3 text-orange-600" />
+                    <span className="text-[10px] font-semibold text-orange-700">Motivo del bloqueo:</span>
+                  </div>
+                  <p className="text-xs text-orange-800">{user.block_reason}</p>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <button
@@ -326,17 +359,30 @@ export default function AdminUsersPage() {
       {/* Block Modal */}
       {showBlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowBlockModal(null)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setShowBlockModal(null); setBlockReason(""); }} />
           <div className="relative bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-gray-900">Bloquear usuario</h3>
-              <button onClick={() => setShowBlockModal(null)} className="p-1 rounded-full hover:bg-gray-100">
+              <button onClick={() => { setShowBlockModal(null); setBlockReason(""); }} className="p-1 rounded-full hover:bg-gray-100">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 mb-3">
               Selecciona el tipo de bloqueo para <span className="font-semibold">{showBlockModal.username}</span>:
             </p>
+
+            {/* Reason field */}
+            <div className="mb-4">
+              <label className="text-xs font-medium text-gray-700 mb-1 block">Motivo (opcional)</label>
+              <textarea
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                placeholder="Ej: Uso de lenguaje inapropiado..."
+                rows={2}
+                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+              />
+            </div>
+
             <div className="space-y-3">
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">

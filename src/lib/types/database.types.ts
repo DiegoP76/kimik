@@ -18,6 +18,7 @@ export interface Database {
           is_blocked: boolean;
           blocked_until: string | null;
           blocked_permanently: boolean;
+          block_reason: string | null;
           created_at: string;
         };
         Insert: {
@@ -28,6 +29,7 @@ export interface Database {
           is_blocked?: boolean;
           blocked_until?: string | null;
           blocked_permanently?: boolean;
+          block_reason?: string | null;
           created_at?: string;
         };
         Update: {
@@ -38,6 +40,7 @@ export interface Database {
           is_blocked?: boolean;
           blocked_until?: string | null;
           blocked_permanently?: boolean;
+          block_reason?: string | null;
           created_at?: string;
         };
       };
