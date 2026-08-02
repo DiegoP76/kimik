@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
-import { LogOut, Settings, ChevronRight, Award, FileText } from "lucide-react";
+import { LogOut, ChevronRight, Award, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -106,6 +106,18 @@ export default function ProfilePage() {
 
         {/* Menu */}
         <div className="mt-6 bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          {profile?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="flex items-center justify-between p-4 border-b border-gray-50 bg-rose-50"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="w-5 h-5 text-rose-600" />
+                <span className="text-sm font-medium text-rose-700">Admin Panel</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-rose-400" />
+            </Link>
+          )}
           <Link
             href="/professional/register"
             className="flex items-center justify-between p-4 border-b border-gray-50"
