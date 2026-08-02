@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConflictCard } from "@/components/ConflictCard";
 import { Navbar } from "@/components/Navbar";
-import { Flame, Clock, TrendingUp } from "lucide-react";
+import { Flame, Clock, TrendingUp, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type FilterType = "hot" | "new" | "top";
@@ -13,6 +13,7 @@ export default function FeedPage() {
   const [conflicts, setConflicts] = useState<any[]>([]);
   const [filter, setFilter] = useState<FilterType>("hot");
   const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -29,7 +30,12 @@ export default function FeedPage() {
         `)
         .eq("status", "active");
 
-      if (filter === "new") {
+      if (filter === "hot") {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        query = query.gte("created_at", sevenDaysAgo.toISOString());
+        query = query.order("created_at", { ascending: false });
+      } else if (filter === "new") {
         query = query.order("created_at", { ascending: false });
       } else {
         query = query.order("created_at", { ascending: false });
@@ -37,9 +43,7 @@ export default function FeedPage() {
 
       const { data } = await query.limit(20);
       if (data) {
-        if (filter === "hot") {
-          data.sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
-        } else if (filter === "top") {
+        if (filter === "hot" || filter === "top") {
           data.sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
         }
         setConflicts(data);
@@ -65,12 +69,24 @@ export default function FeedPage() {
     { id: "top", label: "Top", icon: TrendingUp },
   ];
 
+  const filterInfo = [
+    { label: "Popular", desc: "Lo mas votado de los ultimos 7 dias", icon: Flame },
+    { label: "Nuevo", desc: "Los conflictos mas recientes", icon: Clock },
+    { label: "Top", desc: "Los mas votados de todos los tiempos", icon: TrendingUp },
+  ];
+
   return (
     <div className="pb-20">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
-        <div className="px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-lg font-bold text-gray-900">KimiK</h1>
+          <button
+            onClick={() => setShowInfo(true)}
+            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <Info className="w-4.5 h-4.5 text-gray-400" />
+          </button>
         </div>
         <div className="flex gap-1 px-4 pb-3">
           {filters.map((f) => (
@@ -109,6 +125,37 @@ export default function FeedPage() {
           ))
         )}
       </div>
+
+      {/* Info Bottom Sheet */}
+      {showInfo && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowInfo(false)} />
+          <div className="relative bg-white rounded-t-2xl p-5 pb-8 w-full max-w-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-gray-900">Filtros</h3>
+              <button
+                onClick={() => setShowInfo(false)}
+                className="p-1 rounded-full hover:bg-gray-100"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              {filterInfo.map((item) => (
+                <div key={item.label} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                    <item.icon className="w-4 h-4 text-rose-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Navbar />
     </div>
