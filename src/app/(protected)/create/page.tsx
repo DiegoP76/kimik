@@ -73,7 +73,7 @@ export default function CreateConflictPage() {
       audioUrl = urlData.publicUrl;
     }
 
-    const { error: insertError } = await supabase.from("conflicts").insert({
+    const { data: insertData, error: insertError } = await supabase.from("conflicts").insert({
       user_id: user.id,
       title: title.trim(),
       description: description.trim() || null,
@@ -82,7 +82,7 @@ export default function CreateConflictPage() {
       option_b: optionB.trim(),
       category,
       location: location.trim() || null,
-    });
+    }).select("id").single();
 
     if (insertError) {
       setError(insertError.message || "Error al publicar el conflicto");
@@ -96,7 +96,7 @@ export default function CreateConflictPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          conflictId: null, // Will be set by RLS
+          conflictId: insertData.id,
           title: title.trim(),
           author: user.id,
         }),

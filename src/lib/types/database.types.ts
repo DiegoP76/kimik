@@ -238,7 +238,12 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_vote_counts: {
+        Args: { conflict_uuid: string };
+        Returns: { option_a_count: number; option_b_count: number }[];
+      };
+    };
     Enums: Record<string, never>;
   };
 }

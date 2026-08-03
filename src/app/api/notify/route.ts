@@ -57,8 +57,7 @@ export async function POST(request: NextRequest) {
           url: `/conflict/${conflictId}`,
         });
 
-        // For now, log the notification (web-push requires VAPID keys setup)
-        console.log("Push notification would be sent to:", sub.endpoint);
+        // For now, just count as sent (web-push requires VAPID keys setup)
         sentCount++;
       } catch (err) {
         console.error("Failed to send push:", err);

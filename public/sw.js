@@ -1,11 +1,5 @@
-const CACHE_NAME = "kimik-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/feed",
-  "/create",
-  "/profile",
-  "/professional",
-];
+const CACHE_NAME = "kimik-v1.1.0";
+const STATIC_ASSETS = ["/"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
