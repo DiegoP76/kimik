@@ -120,10 +120,10 @@ export function NotificationBell() {
 
       {/* Notification Panel */}
       {showPanel && (
-        <div className="fixed inset-0 z-50 flex items-start justify-end">
-          <div className="absolute inset-0 bg-black/20" onClick={() => setShowPanel(false)} />
-          <div className="relative bg-white w-full max-w-sm h-full shadow-xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowPanel(false)} />
+          <div className="relative bg-white rounded-t-2xl w-full max-w-lg max-h-[80vh] shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h3 className="text-base font-bold text-gray-900">Notificaciones</h3>
               <button
                 onClick={() => setShowPanel(false)}
@@ -132,7 +132,7 @@ export function NotificationBell() {
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            <div className="overflow-y-auto h-full pb-20">
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(80vh - 60px)" }}>
               {newConflicts.length === 0 ? (
                 <div className="text-center py-10">
                   <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
