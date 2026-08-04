@@ -322,7 +322,7 @@ export default function CreateConflictPage() {
             </p>
             <div className="flex flex-col gap-2.5">
               <a
-                href="https://mpago.la/xxxxxx"
+                href="https://mpago.la/1vyaWGS"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all"
