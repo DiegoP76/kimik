@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Shield, AlertTriangle, Trash2, Eye, Edit2, Save, X, Search, MapPin, Vote } from "lucide-react";
+import { ArrowLeft, Shield, AlertTriangle, Trash2, Eye, Edit2, Save, X, Search, MapPin, Vote, Zap } from "lucide-react";
 import Link from "next/link";
 import { cn, formatTimeAgo } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ interface Conflict {
   option_b: string;
   category: string;
   location: string | null;
+  is_premium_analysis: boolean;
   status: string;
   created_at: string;
   profiles: { username: string } | null;
@@ -34,6 +35,7 @@ export default function AdminConflictsPage() {
   const [editCategory, setEditCategory] = useState("");
   const [editLocation, setEditLocation] = useState("");
   const [editStatus, setEditStatus] = useState("");
+  const [editIsPremiumAnalysis, setEditIsPremiumAnalysis] = useState(false);
   const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
   const router = useRouter();
 
@@ -104,6 +106,7 @@ export default function AdminConflictsPage() {
         category: editCategory,
         location: editLocation || null,
         status: editStatus,
+        is_premium_analysis: editIsPremiumAnalysis,
       })
       .eq("id", editingConflict.id);
 
@@ -117,6 +120,7 @@ export default function AdminConflictsPage() {
         category: editCategory,
         location: editLocation || null,
         status: editStatus,
+        is_premium_analysis: editIsPremiumAnalysis,
       } : c)
     );
     setEditingConflict(null);
@@ -202,6 +206,11 @@ export default function AdminConflictsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {conflict.is_premium_analysis && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">
+                      <Zap className="w-3 h-3" /> Express
+                    </span>
+                  )}
                   <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium", statusColors[conflict.status] || statusColors.active)}>
                     {conflict.status}
                   </span>
@@ -233,6 +242,7 @@ export default function AdminConflictsPage() {
                     setEditCategory(conflict.category);
                     setEditLocation(conflict.location || "");
                     setEditStatus(conflict.status);
+                    setEditIsPremiumAnalysis(conflict.is_premium_analysis);
                   }}
                   className="flex-1 flex items-center justify-center gap-1 py-2 bg-blue-100 text-blue-700 rounded-xl text-xs font-medium"
                 >
@@ -361,6 +371,19 @@ export default function AdminConflictsPage() {
                   maxLength={100}
                   className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
+              </div>
+              <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">⚡ Dictamen Express</p>
+                  <p className="text-xs text-gray-500">Activo después de verificar el pago</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditIsPremiumAnalysis(!editIsPremiumAnalysis)}
+                  className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${editIsPremiumAnalysis ? "bg-amber-500" : "bg-gray-300"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${editIsPremiumAnalysis ? "translate-x-5" : ""}`} />
+                </button>
               </div>
             </div>
             <div className="flex gap-3 mt-5">

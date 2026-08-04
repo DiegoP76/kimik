@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { AudioRecorder } from "@/components/AudioRecorder";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Zap, ExternalLink, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 interface Category {
@@ -26,6 +26,9 @@ export default function CreateConflictPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isPremiumAnalysis, setIsPremiumAnalysis] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [wasPremiumAtSubmit, setWasPremiumAtSubmit] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,6 +48,7 @@ export default function CreateConflictPage() {
     setShowConfirm(false);
     setLoading(true);
     setError("");
+    setWasPremiumAtSubmit(isPremiumAnalysis);
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -82,6 +86,7 @@ export default function CreateConflictPage() {
       option_b: optionB.trim(),
       category,
       location: location.trim() || null,
+      is_premium_analysis: false,
     }).select("id").single();
 
     if (insertError) {
@@ -105,7 +110,13 @@ export default function CreateConflictPage() {
       // Notification failed, but conflict was created - ignore
     }
 
-    router.push("/feed");
+    setLoading(false);
+
+    if (isPremiumAnalysis) {
+      setShowPremiumModal(true);
+    } else {
+      router.push("/feed");
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -231,6 +242,28 @@ export default function CreateConflictPage() {
           <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl">{error}</p>
         )}
 
+        {/* Premium Switch */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => setIsPremiumAnalysis(!isPremiumAnalysis)}
+              className={`relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5 ${isPremiumAnalysis ? "bg-amber-500" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isPremiumAnalysis ? "translate-x-5" : ""}`} />
+            </button>
+            <div>
+              <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-500" />
+                Solicitar Dictamen Profesional Express
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Un psicólogo verificado evaluará tu caso con prioridad. <span className="font-semibold text-amber-600">$3.500 ARS</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={loading || !title.trim() || !optionA.trim() || !optionB.trim()}
@@ -267,6 +300,41 @@ export default function CreateConflictPage() {
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 active:scale-[0.98] transition-all"
               >
                 {loading ? "Publicando..." : "Publicar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Post-Creation Modal */}
+      {showPremiumModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">¡Conflicto publicado!</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-5 leading-relaxed">
+              Para activar la revisión prioritaria del psicólogo, realiza el pago de <span className="font-semibold text-amber-600">$3.500 ARS</span>. Una vez acreditado, tu caso se destacará automáticamente.
+            </p>
+            <div className="flex flex-col gap-2.5">
+              <a
+                href="https://mpago.la/xxxxxx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 active:scale-[0.98] transition-all"
+              >
+                Pagar $3.500 ARS con Mercado Pago
+                <ExternalLink className="w-4 h-4" />
+              </a>
+              <button
+                onClick={() => router.push("/feed")}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-200 active:scale-[0.98] transition-all"
+              >
+                Ir al Feed
               </button>
             </div>
           </div>

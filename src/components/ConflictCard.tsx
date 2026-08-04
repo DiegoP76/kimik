@@ -15,6 +15,7 @@ interface ConflictWithVotes {
   option_b: string;
   category: string;
   location: string | null;
+  is_premium_analysis: boolean;
   created_at: string;
   profiles: { username: string; avatar_url: string | null } | null;
   votes: { selected_option: "A" | "B" }[];
@@ -133,9 +134,21 @@ export function ConflictCard({ conflict, onVote }: ConflictCardProps) {
               <p className="text-[10px] text-gray-500">{formatTimeAgo(conflict.created_at)}</p>
             </div>
           </div>
-          <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium", categoryColors[conflict.category] || categoryColors.otros)}>
-            {conflict.category}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {conflict.is_premium_analysis && (
+              <span className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] rounded-full px-2 py-0.5 font-medium">
+                ⚡ Express
+              </span>
+            )}
+            {conflict.professional_opinions.length > 0 && (
+              <span className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] rounded-full px-2 py-0.5 font-medium flex items-center gap-1">
+                <BadgeCheck className="w-3 h-3" /> Dictamen
+              </span>
+            )}
+            <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium", categoryColors[conflict.category] || categoryColors.otros)}>
+              {conflict.category}
+            </span>
+          </div>
         </div>
 
         {/* Title */}
@@ -227,12 +240,6 @@ export function ConflictCard({ conflict, onVote }: ConflictCardProps) {
             </div>
           )}
         </div>
-        {conflict.professional_opinions.length > 0 && (
-          <div className="flex items-center gap-1 text-rose-600">
-            <BadgeCheck className="w-3.5 h-3.5" />
-            <span className="text-xs">{conflict.professional_opinions.length} dictamen{conflict.professional_opinions.length > 1 ? "es" : ""}</span>
-          </div>
-        )}
       </div>
     </div>
   );
