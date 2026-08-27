@@ -44,17 +44,21 @@ export default function LoginPage() {
     const { data, error: authError } = await supabase.auth.signInAnonymously();
 
     if (authError) {
-      setError("No se pudo entrar como invitado");
+      console.error("Guest auth error:", authError);
+      setError(`Error: ${authError.message}`);
       setGuestLoading(false);
       return;
     }
 
     if (data.user) {
       const guestName = `Invitado_${data.user.id.slice(0, 6)}`;
-      await supabase.from("profiles").upsert({
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: data.user.id,
         username: guestName,
       });
+      if (profileError) {
+        console.error("Guest profile error:", profileError);
+      }
     }
 
     router.push("/feed");
