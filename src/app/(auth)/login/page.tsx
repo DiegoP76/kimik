@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -29,6 +30,31 @@ export default function LoginPage() {
       setError(authError.message);
       setLoading(false);
       return;
+    }
+
+    router.push("/feed");
+    router.refresh();
+  };
+
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+    setError("");
+
+    const supabase = createClient();
+    const { data, error: authError } = await supabase.auth.signInAnonymously();
+
+    if (authError) {
+      setError("No se pudo entrar como invitado");
+      setGuestLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      const guestName = `Invitado_${data.user.id.slice(0, 6)}`;
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
+        username: guestName,
+      });
     }
 
     router.push("/feed");
@@ -92,6 +118,24 @@ export default function LoginPage() {
             {loading ? "Iniciando sesion..." : "Iniciar sesion"}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-3 text-gray-400">o</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleGuestLogin}
+          disabled={guestLoading}
+          className="w-full py-3.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-200 disabled:opacity-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          <UserCheck className="w-4 h-4" />
+          {guestLoading ? "Entrando..." : "Entrar como invitado"}
+        </button>
 
         <p className="text-center text-sm text-gray-500 mt-8">
           No tienes cuenta?{" "}
