@@ -12,7 +12,7 @@ type FilterType = "hot" | "new" | "top" | "mine";
 
 export default function FeedPage() {
   const [conflicts, setConflicts] = useState<any[]>([]);
-  const [filter, setFilter] = useState<FilterType>("hot");
+  const [filter, setFilter] = useState<FilterType>("new");
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
