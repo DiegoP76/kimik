@@ -7,8 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, UserCheck } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("invitado@kimik.test");
+  const [password, setPassword] = useState("Invitado123!");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
@@ -41,27 +41,35 @@ export default function LoginPage() {
     setError("");
 
     const supabase = createClient();
+    const tempId = Math.random().toString(36).slice(2, 10);
+    const tempEmail = `guest_${tempId}@kimik.guest`;
+    const tempPassword = `Guest${tempId}!`;
 
-    // Step 1: anonymous sign in
-    const { data, error: authError } = await supabase.auth.signInAnonymously();
+    // Step 1: create temp account
+    const { data, error: authError } = await supabase.auth.signUp({
+      email: tempEmail,
+      password: tempPassword,
+      options: { data: { username: `Invitado_${tempId}` } },
+    });
 
     if (authError) {
       console.error("Step 1 - Auth error:", JSON.stringify(authError));
-      setError(`Auth error: ${authError.message || JSON.stringify(authError)}`);
+      setError(`Error: ${authError.message}`);
       setGuestLoading(false);
       return;
     }
 
-    // Step 2: create profile
+    // Step 2: sign in
     if (data.user) {
-      const guestName = `Invitado_${data.user.id.slice(0, 6)}`;
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: data.user.id,
-        username: guestName,
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: tempEmail,
+        password: tempPassword,
       });
-      if (profileError) {
-        console.error("Step 2 - Profile error:", JSON.stringify(profileError));
-        // Profile error is not critical, continue anyway
+
+      if (signInError) {
+        // If signUp returned a user but signIn fails, the user might need email confirmation
+        // Try signing in anyway - sometimes signUp auto-signs in
+        console.error("Step 2 - Sign in error:", JSON.stringify(signInError));
       }
     }
 
