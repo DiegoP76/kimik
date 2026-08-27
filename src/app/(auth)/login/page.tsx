@@ -41,15 +41,18 @@ export default function LoginPage() {
     setError("");
 
     const supabase = createClient();
+
+    // Step 1: anonymous sign in
     const { data, error: authError } = await supabase.auth.signInAnonymously();
 
     if (authError) {
-      console.error("Guest auth error:", authError);
-      setError(`Error: ${authError.message}`);
+      console.error("Step 1 - Auth error:", JSON.stringify(authError));
+      setError(`Auth error: ${authError.message || JSON.stringify(authError)}`);
       setGuestLoading(false);
       return;
     }
 
+    // Step 2: create profile
     if (data.user) {
       const guestName = `Invitado_${data.user.id.slice(0, 6)}`;
       const { error: profileError } = await supabase.from("profiles").upsert({
@@ -57,7 +60,8 @@ export default function LoginPage() {
         username: guestName,
       });
       if (profileError) {
-        console.error("Guest profile error:", profileError);
+        console.error("Step 2 - Profile error:", JSON.stringify(profileError));
+        // Profile error is not critical, continue anyway
       }
     }
 
